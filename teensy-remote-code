@@ -1,0 +1,74 @@
+//written for a Teensy 3.x
+#define MONITOR_LED 13
+
+// bytes to start and stop the recorder, a negative number is used as a delay
+int record[5] = { 0x81, 0x0, -100, 0x80, 0x0 };  
+
+void zoomTX(int d[], int len) {
+    
+    // show what is going to be done 
+    for (int i = 0; i < len; i++) { 
+      char out[40];
+      if (d[i] < 0) {
+        sprintf(out,"TX2: delay(%d)",abs(d[i]));
+        Serial.println(out);        
+      }
+      else {
+        sprintf(out, "TX2: %d\t0x%x", i, d[i]);        
+        Serial.println(out);
+      }      
+    }
+
+    // do the command
+    for (int i = 0; i < len; i++) {  
+      if (d[i] < 0) {
+        delay(abs(d[i]));
+      }
+      else {
+        Serial2.write(d[i]);
+      }      
+    }   
+}
+
+void setup() {
+  
+  pinMode(MONITOR_LED, OUTPUT);
+  digitalWrite(MONITOR_LED, HIGH);
+  delay(100);
+  digitalWrite(MONITOR_LED, LOW);
+  delay(100);
+  digitalWrite(MONITOR_LED, HIGH);
+  delay(100);
+  digitalWrite(MONITOR_LED, LOW);
+  delay(100);
+  digitalWrite(MONITOR_LED, HIGH);
+  delay(100);
+  digitalWrite(MONITOR_LED, LOW);
+  delay(100);
+
+  delay(5000);
+  Serial.begin(9600);
+  Serial.println("ready");
+
+  Serial2.begin(2400, SERIAL_8N1);  // connection to Zoom. 
+
+}
+
+void loop() {
+ pinMode(MONITOR_LED, OUTPUT);
+ digitalWrite(MONITOR_LED, LOW);
+ delay(2000);
+  
+  Serial.println("REC: start");
+  zoomTX(record, sizeof(record)/sizeof(int));
+  digitalWrite(MONITOR_LED, HIGH);
+
+  Serial.println("-----------------");
+  delay(60000); // wait 60 seconds
+   
+  Serial.println("REC: stop");
+  zoomTX(record, sizeof(record)/sizeof(int));
+  digitalWrite(MONITOR_LED, LOW);
+
+  delay(1740000); // wait 29 min 
+}
